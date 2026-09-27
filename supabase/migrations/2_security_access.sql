@@ -39,7 +39,7 @@ declare
   sequence_oid oid;
   sequence_table_name text;
   app_tables constant text[] := array[
-    'clients', 'records', 'gpu_records', 'gpu_snapshots', 'cfm_users',
+    'clients', 'records', 'gpu_records', 'gpu_snapshots', 'users',
     'login_rate_limits', 'settings', 'themes', 'theme_assets', 'ping_tasks',
     'ping_records', 'ping_snapshots', 'website_monitors', 'website_checks',
     'offline_notifications', 'expiry_notifications', 'load_notifications', 'audit_logs'
@@ -115,7 +115,7 @@ begin
     'records',
     'gpu_records',
     'gpu_snapshots',
-    'cfm_users',
+    'users',
     'login_rate_limits',
     'settings',
     'ping_tasks',

@@ -2913,7 +2913,7 @@ as $$
   select to_jsonb(row_data)
   from (
     select uuid, username, passwd, session_version, password_changed_at, created_at, updated_at
-    from cfm_users
+    from users
     where username = input_username
     limit 1
   ) row_data;
@@ -2926,7 +2926,7 @@ stable
 set search_path = public
 as $$
   select count(*)::integer
-  from cfm_users;
+  from users;
 $$;
 
 create or replace function public.cfm_user_by_uuid(input_uuid text)
@@ -2938,7 +2938,7 @@ as $$
   select to_jsonb(row_data)
   from (
     select uuid, username, passwd, session_version, password_changed_at, created_at, updated_at
-    from cfm_users
+    from users
     where uuid = input_uuid
     limit 1
   ) row_data;
@@ -2950,7 +2950,7 @@ language plpgsql
 set search_path = public
 as $$
 begin
-  update cfm_users
+  update users
   set username = input_username,
       updated_at = now()
   where uuid = input_uuid;
@@ -2963,7 +2963,7 @@ language plpgsql
 set search_path = public
 as $$
 begin
-  update cfm_users
+  update users
   set passwd = input_passwd,
       updated_at = now()
   where uuid = input_uuid;
@@ -2975,13 +2975,13 @@ returns jsonb
 language sql
 set search_path = public
 as $$
-  update cfm_users
+  update users
   set passwd = input_passwd,
       session_version = session_version + 1,
       password_changed_at = now(),
       updated_at = now()
   where uuid = input_uuid
-  returning to_jsonb(cfm_users);
+  returning to_jsonb(users);
 $$;
 
 create or replace function public.cfm_validate_admin_session(user_uuid text, expected_session_version int)
@@ -2993,7 +2993,7 @@ as $$
   select to_jsonb(row_data)
   from (
     select uuid, username, session_version
-    from cfm_users
+    from users
     where uuid = user_uuid
       and session_version = expected_session_version
     limit 1
@@ -3008,11 +3008,11 @@ language plpgsql
 set search_path = public
 as $$
 begin
-  if exists (select 1 from cfm_users limit 1) then
+  if exists (select 1 from users limit 1) then
     return;
   end if;
 
-  insert into cfm_users (uuid, username, passwd)
+  insert into users (uuid, username, passwd)
   values (input_uuid, input_username, input_passwd);
 end;
 $$;
@@ -3570,7 +3570,7 @@ begin
     raise exception 'user uuid, username, and password hash are required';
   end if;
 
-  insert into cfm_users (uuid, username, passwd, password_changed_at)
+  insert into users (uuid, username, passwd, password_changed_at)
   values (input_uuid, input_username, input_passwd, now());
   return true;
 end;
@@ -3614,7 +3614,7 @@ as $$
 declare
   deleted_count integer;
 begin
-  delete from cfm_users
+  delete from users
   where uuid = input_uuid
     and username = input_username
     and passwd = input_passwd;
@@ -4328,11 +4328,11 @@ returns jsonb
 language sql
 set search_path = public
 as $$
-  update cfm_users
+  update users
   set session_version = session_version + 1,
       updated_at = now()
   where uuid = input_uuid
-  returning to_jsonb(cfm_users);
+  returning to_jsonb(users);
 $$;
 
 create or replace function public.cfm_update_user_username_rotate_session(input_uuid text, input_username text)
@@ -4340,12 +4340,12 @@ returns jsonb
 language sql
 set search_path = public
 as $$
-  update cfm_users
+  update users
   set username = input_username,
       session_version = session_version + 1,
       updated_at = now()
   where uuid = input_uuid
-  returning to_jsonb(cfm_users);
+  returning to_jsonb(users);
 $$;
 
 revoke all on function public.cfm_rotate_user_session(text) from public;
@@ -5066,7 +5066,7 @@ as $$
 declare
   user_count integer;
   target_uuid text;
-  recovered cfm_users%rowtype;
+  recovered users%rowtype;
 begin
   if nullif(trim(coalesce(input_uuid, '')), '') is null
     or nullif(trim(coalesce(input_username, '')), '') is null
@@ -5075,15 +5075,15 @@ begin
     raise exception 'user uuid, username, and password hash are required';
   end if;
 
-  select count(*)::integer into user_count from cfm_users;
+  select count(*)::integer into user_count from users;
 
   if user_count = 0 then
-    insert into cfm_users (uuid, username, passwd, password_changed_at)
+    insert into users (uuid, username, passwd, password_changed_at)
     values (input_uuid, input_username, input_passwd, now())
     returning * into recovered;
   elsif user_count = 1 then
-    select uuid into target_uuid from cfm_users limit 1;
-    update cfm_users
+    select uuid into target_uuid from users limit 1;
+    update users
     set username = input_username,
         passwd = input_passwd,
         session_version = session_version + 1,
@@ -5120,7 +5120,7 @@ as $$
     select uuid, username, passwd, session_version, password_changed_at,
            totp_secret_enc, totp_enabled_at, totp_last_used_step, recovery_code_hashes,
            created_at, updated_at
-    from cfm_users
+    from users
     where username = input_username
     limit 1
   ) row_data;
@@ -5137,7 +5137,7 @@ as $$
     select uuid, username, passwd, session_version, password_changed_at,
            totp_secret_enc, totp_enabled_at, totp_last_used_step, recovery_code_hashes,
            created_at, updated_at
-    from cfm_users
+    from users
     where uuid = input_uuid
     limit 1
   ) row_data;
@@ -5153,7 +5153,7 @@ language plpgsql
 set search_path = public
 as $$
 declare
-  updated_user cfm_users%rowtype;
+  updated_user users%rowtype;
 begin
   if nullif(trim(coalesce(input_uuid, '')), '') is null
     or nullif(trim(coalesce(input_secret_enc, '')), '') is null
@@ -5164,7 +5164,7 @@ begin
     raise exception 'invalid TOTP enrollment data';
   end if;
 
-  update cfm_users
+  update users
   set totp_secret_enc = input_secret_enc,
       totp_enabled_at = now(),
       totp_last_used_step = input_used_step,
@@ -5187,9 +5187,9 @@ language plpgsql
 set search_path = public
 as $$
 declare
-  updated_user cfm_users%rowtype;
+  updated_user users%rowtype;
 begin
-  update cfm_users
+  update users
   set totp_secret_enc = null,
       totp_enabled_at = null,
       totp_last_used_step = -1,
@@ -5215,7 +5215,7 @@ language plpgsql
 set search_path = public
 as $$
 declare
-  updated_user cfm_users%rowtype;
+  updated_user users%rowtype;
 begin
   if jsonb_typeof(input_recovery_code_hashes) is distinct from 'array'
     or jsonb_array_length(input_recovery_code_hashes) <> 8
@@ -5223,7 +5223,7 @@ begin
     raise exception 'exactly eight recovery code hashes are required';
   end if;
 
-  update cfm_users
+  update users
   set recovery_code_hashes = input_recovery_code_hashes,
       session_version = session_version + 1,
       updated_at = now()
@@ -5248,7 +5248,7 @@ begin
     return false;
   end if;
 
-  update cfm_users
+  update users
   set totp_last_used_step = input_step,
       updated_at = now()
   where uuid = input_uuid
@@ -5270,7 +5270,7 @@ begin
     return false;
   end if;
 
-  update cfm_users
+  update users
   set recovery_code_hashes = recovery_code_hashes - input_code_hash,
       updated_at = now()
   where uuid = input_uuid
@@ -5289,7 +5289,7 @@ as $$
 declare
   user_count integer;
   target_uuid text;
-  recovered cfm_users%rowtype;
+  recovered users%rowtype;
 begin
   if nullif(trim(coalesce(input_uuid, '')), '') is null
     or nullif(trim(coalesce(input_username, '')), '') is null
@@ -5298,15 +5298,15 @@ begin
     raise exception 'user uuid, username, and password hash are required';
   end if;
 
-  select count(*)::integer into user_count from cfm_users;
+  select count(*)::integer into user_count from users;
 
   if user_count = 0 then
-    insert into cfm_users (uuid, username, passwd, password_changed_at)
+    insert into users (uuid, username, passwd, password_changed_at)
     values (input_uuid, input_username, input_passwd, now())
     returning * into recovered;
   elsif user_count = 1 then
-    select uuid into target_uuid from cfm_users limit 1;
-    update cfm_users
+    select uuid into target_uuid from users limit 1;
+    update users
     set username = input_username,
         passwd = input_passwd,
         session_version = session_version + 1,

@@ -215,20 +215,20 @@ on conflict (key) do update set value = excluded.value;
 -- Source: 20260710000000_totp_two_factor_authentication.sql
 set local search_path = public;
 
-alter table cfm_users add column if not exists totp_secret_enc text;
-alter table cfm_users add column if not exists totp_enabled_at timestamptz;
-alter table cfm_users add column if not exists totp_last_used_step bigint not null default -1;
-alter table cfm_users add column if not exists recovery_code_hashes jsonb not null default '[]'::jsonb;
+alter table users add column if not exists totp_secret_enc text;
+alter table users add column if not exists totp_enabled_at timestamptz;
+alter table users add column if not exists totp_last_used_step bigint not null default -1;
+alter table users add column if not exists recovery_code_hashes jsonb not null default '[]'::jsonb;
 
-alter table cfm_users drop constraint if exists users_recovery_code_hashes_array;
-alter table cfm_users add constraint users_recovery_code_hashes_array
+alter table users drop constraint if exists users_recovery_code_hashes_array;
+alter table users add constraint users_recovery_code_hashes_array
   check (
     jsonb_typeof(recovery_code_hashes) = 'array'
     and jsonb_array_length(recovery_code_hashes) <= 8
   );
 
-alter table cfm_users drop constraint if exists users_totp_state_consistent;
-alter table cfm_users add constraint users_totp_state_consistent
+alter table users drop constraint if exists users_totp_state_consistent;
+alter table users add constraint users_totp_state_consistent
   check (
     (totp_enabled_at is null and totp_secret_enc is null and recovery_code_hashes = '[]'::jsonb)
     or (totp_enabled_at is not null and nullif(totp_secret_enc, '') is not null)

@@ -102,7 +102,7 @@ create table if not exists gpu_snapshots (
 create index if not exists idx_gpu_snapshots_client_time on gpu_snapshots(client, time);
 create index if not exists idx_gpu_snapshots_time on gpu_snapshots(time);
 
-create table if not exists cfm_users (
+create table if not exists users (
   uuid text primary key,
   username text not null unique,
   passwd text not null,
@@ -307,8 +307,8 @@ create table if not exists audit_logs (
 
 create index if not exists idx_audit_logs_time on audit_logs(time);
 
-alter table cfm_users add column if not exists session_version integer not null default 1;
-alter table cfm_users add column if not exists password_changed_at timestamptz;
+alter table users add column if not exists session_version integer not null default 1;
+alter table users add column if not exists password_changed_at timestamptz;
 alter table ping_tasks add column if not exists sort_order integer not null default 0;
 alter table clients add column if not exists sort_order integer not null default 0;
 
@@ -405,7 +405,7 @@ declare
   table_name text;
   sequence_oid oid;
   app_tables constant text[] := array[
-    'clients', 'records', 'gpu_records', 'gpu_snapshots', 'cfm_users',
+    'clients', 'records', 'gpu_records', 'gpu_snapshots', 'users',
     'login_rate_limits', 'settings', 'themes', 'theme_assets', 'ping_tasks',
     'ping_records', 'ping_snapshots', 'website_monitors', 'website_checks',
     'offline_notifications', 'expiry_notifications', 'load_notifications', 'audit_logs'
@@ -436,7 +436,7 @@ begin
 end $$;
 
 comment on table clients is 'CF Monitor internal table. Public access must go through the Worker API.';
-comment on table cfm_users is 'CF Monitor admin cfm_users. Do not expose through Supabase Data API.';
+comment on table users is 'CF Monitor admin users. Do not expose through Supabase Data API.';
 comment on table settings is 'CF Monitor settings and internal health keys. Do not expose through Supabase Data API.';
 
 insert into settings (key, value)
