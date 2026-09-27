@@ -52,7 +52,7 @@ test('AUD-09 installation preserves unrelated shared-schema access and defaults'
         has_table_privilege('anon', 'public.settings', 'select') as public_settings,
         (select count(*)::integer from pg_class c join pg_namespace n on n.oid=c.relnamespace
           where n.nspname='public' and c.relname in ('clients','records','gpu_records','gpu_snapshots',
-          'users','login_rate_limits','settings','themes','theme_assets','ping_tasks','ping_records',
+          'cfm_users','login_rate_limits','settings','themes','theme_assets','ping_tasks','ping_records',
           'ping_snapshots','website_monitors','website_checks','offline_notifications',
           'expiry_notifications','load_notifications','audit_logs') and c.relrowsecurity and c.relforcerowsecurity) as protected_tables,
         (select count(*)::integer from pg_proc p join pg_namespace n on n.oid=p.pronamespace
