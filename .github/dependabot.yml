@@ -1,0 +1,88 @@
+# Dependabot version updates
+# Policy: weekly, grouped, low-noise. Dev-dependency CVEs no longer block
+# deploys (security-check.mjs audits --omit=dev), so Dependabot is the
+# compensating control that keeps the dev toolchain from rotting.
+version: 2
+updates:
+  # Root workspace (miniflare, esbuild, @electric-sql/pglite)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: ['minor', 'patch']
+      production-dependencies:
+        dependency-type: production
+        update-types: ['minor', 'patch']
+    commit-message:
+      prefix: deps
+      include: scope
+
+  # Frontend (React, Vite, Tailwind, ...)
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: ['minor', 'patch']
+      production-dependencies:
+        dependency-type: production
+        update-types: ['minor', 'patch']
+    commit-message:
+      prefix: deps
+      include: scope
+
+  # Worker (hono, ...)
+  - package-ecosystem: npm
+    directory: /worker
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    groups:
+      production-dependencies:
+        dependency-type: production
+        update-types: ['minor', 'patch']
+    commit-message:
+      prefix: deps
+      include: scope
+
+  # Agent (Go modules)
+  - package-ecosystem: gomod
+    directory: /agent
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    groups:
+      gomod:
+        update-types: ['minor', 'patch']
+    commit-message:
+      prefix: deps
+      include: scope
+
+  # GitHub Actions 自身
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: ci
+      include: scope
