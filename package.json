@@ -25,13 +25,13 @@
   "cloudflare": {
     "bindings": {
       "SUPABASE_URL": {
-        "description": "Supabase 项目的 Project URL，例如 `https://PROJECT_REF.supabase.co`。在 Supabase Project Settings -> API 里复制。"
+        "description": "Supabase \u9879\u76ee\u7684 Project URL\uff0c\u4f8b\u5982 `https://PROJECT_REF.supabase.co`\u3002\u5728 Supabase Project Settings -> API \u91cc\u590d\u5236\u3002"
       },
       "SUPABASE_SECRET_KEY": {
-        "description": "Supabase Secret key，通常以 sb_secret_ 开头。不要填 Publishable key 或 anon key。"
+        "description": "Supabase Secret key\uff0c\u901a\u5e38\u4ee5 sb_secret_ \u5f00\u5934\u3002\u4e0d\u8981\u586b Publishable key \u6216 anon key\u3002"
       },
       "JWT_SECRET": {
-        "description": "后台登录会话签名密钥。建议使用至少 32 个字符的随机字符串。"
+        "description": "\u540e\u53f0\u767b\u5f55\u4f1a\u8bdd\u7b7e\u540d\u5bc6\u94a5\u3002\u5efa\u8bae\u4f7f\u7528\u81f3\u5c11 32 \u4e2a\u5b57\u7b26\u7684\u968f\u673a\u5b57\u7b26\u4e32\u3002"
       }
     }
   },
@@ -43,7 +43,7 @@
   "overrides": {
     "miniflare": {
       "sharp": "0.35.4",
-      "undici": "7.29.0"
+      "undici": "^7.30.1"
     }
   }
 }
