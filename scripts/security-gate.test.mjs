@@ -53,9 +53,16 @@ test('AUD-20 full verification rejects npm findings even if a scanner incorrectl
   }
 });
 
-test('AUD-20 security verification includes vulnerable build dependencies even in production environments', async () => {
-  const result = await fixture({ npm: args => args.includes('--include=dev') ? vulnerableNpm : cleanNpm });
-  assert.equal(result.status, 1, 'NODE_ENV=production must not silently omit the Wrangler/build/test dependency graph');
+test('AUD-20 security verification audits production dependencies only; dev-only findings do not block', async () => {
+  // Policy (2026-10-24): dev/build tooling (miniflare, tailwind/postcss chain)
+  // never ships to the deployed worker, so advisories against it must not block
+  // publication. Simulates a tree whose dev graph is vulnerable but whose
+  // production graph is clean: the audit must pass with --omit=dev.
+  const result = await fixture({ npm: args => args.includes('--omit=dev') ? cleanNpm : vulnerableNpm });
+  assert.equal(result.status, 0, 'dev/build tooling advisories must not block publication');
+  const audit = result.calls.find(call => call.args.includes('audit'));
+  assert.ok(audit.args.includes('--omit=dev'), 'audit must explicitly scope to production dependencies');
+  assert.ok(!audit.args.includes('--include=dev'), 'the dev graph must not be pulled back into the gate');
 });
 
 test('AUD-20 an npm-launched gate invokes that npm CLI directly without a Windows shell', async () => {

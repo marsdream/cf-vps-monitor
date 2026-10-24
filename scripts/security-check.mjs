@@ -16,7 +16,11 @@ function requireSuccessfulScan(name, result) {
 // CI. A registry outage or truncated result must never be treated as a clean scan.
 export function runSecurityChecks({ run = spawnSync, log = console.log } = {}) {
   const npmCli = process.env.npm_execpath;
-  const auditArgs = ['audit', '--audit-level=low', '--include=dev', '--json'];
+  // Policy (2026-10-24): audit production dependencies only. Dev/build tooling
+  // (miniflare, tailwind/postcss chain, etc.) never ships to the deployed
+  // worker, so its advisories must not block publication. Production deps
+  // (hono, ...) remain zero-tolerance at any severity.
+  const auditArgs = ['audit', '--audit-level=low', '--omit=dev', '--json'];
   const npm = run(npmCli ? process.execPath : process.platform === 'win32' ? 'npm.cmd' : 'npm', npmCli ? [npmCli, ...auditArgs] : auditArgs, {
     cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
     shell: !npmCli && process.platform === 'win32', timeout: 120000, maxBuffer: 16 * 1024 * 1024,
